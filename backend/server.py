@@ -48,12 +48,16 @@ app.add_middleware(
 
 @app.get('/')
 def root():
+    """
+    Root function to serve as gateway to the API when accessing it via the address
+    """
     return {
         'message': 'Go to either of the links below to check the documentation',
-        'links': [
-            'https://hainco-api.herokuapp.com/redoc',
-            'https://hainco-api.herokuapp.com/docs'
-        ]
+        'links': {
+            'ReDocs': 'https://hainco-api.herokuapp.com/redoc',
+            'OpenAPI': 'https://hainco-api.herokuapp.com/docs'
+        }
+
     }
 
 
@@ -62,6 +66,11 @@ def root():
 @app.get('/product',
          status_code=status.HTTP_200_OK)
 def get_all_product() -> list[Product]:
+    """
+    Function to handle the endpoint to fetch all products from the database
+
+    :return: Returns the list of Product objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -83,15 +92,21 @@ def get_all_product() -> list[Product]:
                 detail='No products exist'
             )
         return all_product
-    except OperationalError as e:
+    except OperationalError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
         )
 
 
-@app.get('/product/{product_code}')
-def get_product_by_product_code(product_code: str):
+@app.get('/product/{product_code}',
+         status_code=status.HTTP_200_OK)
+def get_product_by_product_code(product_code: str) -> Product:
+    """
+    Function to handle the endpoint to fetch a single product from the database by product code
+
+    :return: Returns the Product object fetched
+    """
     try:
         existing = False
         # check product if existing
@@ -130,7 +145,8 @@ def get_product_by_product_code(product_code: str):
         )
 
 
-@app.post('/product/new_product')
+@app.post('/product/new_product',
+          status_code=status.HTTP_201_CREATED)
 def add_product(product: Product):
     try:
         code = product.product_code
@@ -156,7 +172,8 @@ def add_product(product: Product):
         )
 
 
-@app.put('/product/update_product/{current_product_code}')
+@app.put('/product/update_product/{current_product_code}',
+         status_code=status.HTTP_200_OK)
 def update_product(current_product_code: str, updated_product: Product):
     try:
         existing = False
@@ -189,6 +206,11 @@ def update_product(current_product_code: str, updated_product: Product):
 @app.get('/staff',
          status_code=status.HTTP_200_OK)
 def get_all_canteen_staff() -> list[Staff]:
+    """
+    Function to handle the endpoint to fetch all staffs from the database
+
+    :return: Returns the list of Staff objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -208,7 +230,7 @@ def get_all_canteen_staff() -> list[Staff]:
                 detail='No staff records exist'
             )
         return all_staff
-    except OperationalError as e:
+    except OperationalError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
@@ -217,7 +239,12 @@ def get_all_canteen_staff() -> list[Staff]:
 
 @app.get('/staff/{username}',
          status_code=status.HTTP_200_OK)
-def get_staff_by_username(username: str):
+def get_staff_by_username(username: str) -> Staff:
+    """
+    Function to handle the endpoint to fetch a single staff from the database by username
+
+    :return: Returns the Staff object fetched
+    """
     try:
         existing = False
         # check username if existing
@@ -330,6 +357,11 @@ def update_staff(current_username: str, updated_staff: Staff):
 @app.get('/customer',
          status_code=status.HTTP_200_OK)
 def get_all_customer() -> list[Customer]:
+    """
+    Function to handle the endpoint to fetch all customers from the database
+
+    :return: Returns the list of Customer objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -471,6 +503,11 @@ def update_customer(current_email: str, updated_customer: Customer):
 @app.get('/admin',
          status_code=status.HTTP_200_OK)
 def get_all_admin():
+    """
+    Function to handle the endpoint to fetch all admins from the database
+
+    :return: Returns the list of Admin objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -608,6 +645,11 @@ def update_admin(current_username: str, updated_admin: Admin):
 @app.get('/transaction',
          status_code=status.HTTP_200_OK)
 def get_all_transaction() -> list[Transaction]:
+    """
+    Function to handle the endpoint to fetch all transactions from the database
+
+    :return: Returns the list of Transaction objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -631,19 +673,6 @@ def get_all_transaction() -> list[Transaction]:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
         )
-
-
-@app.get('/transaction/{id}',
-         status_code=status.HTTP_200_OK)
-def get_transaction_by_id(id: int) -> Transaction:
-    pass
-
-
-@app.post('/transaction/{id}',
-          status_code=status.HTTP_201_CREATED)
-def add_transaction(id: int, transaction: Transaction) -> Transaction:
-    pass
-
 
 # === RECORD ===
 #
