@@ -48,7 +48,13 @@ app.add_middleware(
 
 @app.get('/')
 def root():
-    return {'message': 'Hello World'}
+    return {
+        'message': 'Go to either of the links below to check the documentation',
+        'links': [
+            'https://hainco-api.herokuapp.com/redoc',
+            'https://hainco-api.herokuapp.com/docs'
+        ]
+    }
 
 
 # === PRODUCT ===
