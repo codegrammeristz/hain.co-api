@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from psycopg2 import OperationalError
@@ -48,12 +50,16 @@ app.add_middleware(
 
 @app.get('/')
 def root():
+    """
+    Root function to serve as gateway to the API when accessing it via the address
+    """
     return {
         'message': 'Go to either of the links below to check the documentation',
-        'links': [
-            'https://hainco-api.herokuapp.com/redoc',
-            'https://hainco-api.herokuapp.com/docs'
-        ]
+        'links': {
+            'ReDocs': 'https://hainco-api.herokuapp.com/redoc',
+            'OpenAPI': 'https://hainco-api.herokuapp.com/docs'
+        }
+
     }
 
 
@@ -62,6 +68,11 @@ def root():
 @app.get('/product',
          status_code=status.HTTP_200_OK)
 def get_all_product() -> list[Product]:
+    """
+    Function to handle the endpoint to fetch all products from the database
+
+    :return: Returns the list of Product objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -83,15 +94,21 @@ def get_all_product() -> list[Product]:
                 detail='No products exist'
             )
         return all_product
-    except OperationalError as e:
+    except OperationalError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
         )
 
 
-@app.get('/product/{product_code}')
-def get_product_by_product_code(product_code: str):
+@app.get('/product/{product_code}',
+         status_code=status.HTTP_200_OK)
+def get_product_by_product_code(product_code: str) -> Product:
+    """
+    Function to handle the endpoint to fetch a single product from the database by product code
+
+    :return: Returns the Product object fetched
+    """
     try:
         existing = False
         # check product if existing
@@ -130,8 +147,15 @@ def get_product_by_product_code(product_code: str):
         )
 
 
-@app.post('/product/new_product')
+@app.post('/product/new_product',
+          status_code=status.HTTP_201_CREATED)
 def add_product(product: Product):
+    """
+    Function to handle the endpoint for adding a new product
+
+    :param Product product: Pydantic model containing the product to be added
+    :return: Returns the new product object and a message
+    """
     try:
         code = product.product_code
         # check username if taken
@@ -156,8 +180,16 @@ def add_product(product: Product):
         )
 
 
-@app.put('/product/update_product/{current_product_code}')
-def update_product(current_product_code: str, updated_product: Product):
+@app.put('/product/update_product/{current_product_code}',
+         status_code=status.HTTP_200_OK)
+def update_product(current_product_code: str, updated_product: Product) -> dict[str, dict[str, str] | str]:
+    """
+    Function to handle the endpoint for updating an Product object.
+
+    :param str current_product_code: The current code of the Product to be updated
+    :param Product updated_product: The Pydantic model containing the updated product info
+    :return: Returns the updated Product object along with a message
+    """
     try:
         existing = False
         # check product if existing
@@ -189,6 +221,11 @@ def update_product(current_product_code: str, updated_product: Product):
 @app.get('/staff',
          status_code=status.HTTP_200_OK)
 def get_all_canteen_staff() -> list[Staff]:
+    """
+    Function to handle the endpoint to fetch all staffs from the database
+
+    :return: Returns the list of Staff objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -208,7 +245,7 @@ def get_all_canteen_staff() -> list[Staff]:
                 detail='No staff records exist'
             )
         return all_staff
-    except OperationalError as e:
+    except OperationalError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
@@ -217,7 +254,12 @@ def get_all_canteen_staff() -> list[Staff]:
 
 @app.get('/staff/{username}',
          status_code=status.HTTP_200_OK)
-def get_staff_by_username(username: str):
+def get_staff_by_username(username: str) -> dict[str | Any, str | Any]:
+    """
+    Function to handle the endpoint to fetch a single staff from the database by username
+
+    :return: Returns the Staff object fetched
+    """
     try:
         existing = False
         # check username if existing
@@ -272,6 +314,12 @@ def get_staff_by_username(username: str):
 @app.post('/staff/new_staff',
           status_code=status.HTTP_201_CREATED)
 def add_staff(staff: Staff):
+    """
+    Function to handle the endpoint for adding a new staff
+
+    :param Staff staff: Pydantic model containing the staff to be added
+    :return: Returns the new staff object and a message
+    """
     try:
         username = staff.staff_username
         # check username if taken
@@ -298,7 +346,14 @@ def add_staff(staff: Staff):
 
 @app.put('/staff/update_staff/{current_username}',
          status_code=status.HTTP_200_OK)
-def update_staff(current_username: str, updated_staff: Staff):
+def update_staff(current_username: str, updated_staff: Staff) -> dict[str, dict[str, str] | str]:
+    """
+    Function to handle the endpoint for updating an Staff object.
+
+    :param str current_username: The current username of the Staff to be updated
+    :param Staff updated_staff: The Pydantic model containing the updated staff info
+    :return: Returns the updated Staff object along with a message
+    """
     try:
         existing = False
         # check product if existing
@@ -330,6 +385,11 @@ def update_staff(current_username: str, updated_staff: Staff):
 @app.get('/customer',
          status_code=status.HTTP_200_OK)
 def get_all_customer() -> list[Customer]:
+    """
+    Function to handle the endpoint to fetch all customers from the database
+
+    :return: Returns the list of Customer objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -359,6 +419,11 @@ def get_all_customer() -> list[Customer]:
 @app.get('/customer/{email}',
          status_code=status.HTTP_200_OK)
 def get_customer_by_email(email: str):
+    """
+    Function to handle the endpoint to fetch a single customer from the database by email
+
+    :return: Returns the Customer object fetched
+    """
     try:
         existing = False
         # check username if existing
@@ -412,7 +477,13 @@ def get_customer_by_email(email: str):
 
 @app.post('/customer/new_customer',
           status_code=status.HTTP_201_CREATED)
-def add_customer(customer: Customer):
+def add_customer(customer: Customer) -> dict[str, Customer | str]:
+    """
+    Function to handle the endpoint for adding a new customer
+
+    :param Customer customer: Pydantic model containing the customer to be added
+    :return: Returns the new customer object and a message
+    """
     try:
         email = customer.customer_email
         # check username if taken
@@ -439,7 +510,14 @@ def add_customer(customer: Customer):
 
 @app.put('/customer/update_customer/{current_email}',
          status_code=status.HTTP_200_OK)
-def update_customer(current_email: str, updated_customer: Customer):
+def update_customer(current_email: str, updated_customer: Customer) -> dict[str, dict[str, str] | str]:
+    """
+    Function to handle the endpoint for updating an Customer object.
+
+    :param str current_email: The current email of the Customer to be updated
+    :param Customer updated_customer: The Pydantic model containing the updated customer info
+    :return: Returns the updated Customer object along with a message
+    """
     try:
         existing = False
         # check product if existing
@@ -471,6 +549,11 @@ def update_customer(current_email: str, updated_customer: Customer):
 @app.get('/admin',
          status_code=status.HTTP_200_OK)
 def get_all_admin():
+    """
+    Function to handle the endpoint to fetch all admins from the database
+
+    :return: Returns the list of Admin objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -498,6 +581,11 @@ def get_all_admin():
 @app.get('/admin/{username}',
          status_code=status.HTTP_200_OK)
 def get_admin_by_username(username: str):
+    """
+    Function to handle the endpoint to fetch a single admin from the database by username
+
+    :return: Returns the Admin object fetched
+    """
     try:
         existing = False
         # check product if existing
@@ -550,6 +638,12 @@ def get_admin_by_username(username: str):
 @app.post('/admin/new_admin',
           status_code=status.HTTP_201_CREATED)
 def add_admin(admin: Admin):
+    """
+    Function to handle the endpoint for adding a new admin
+
+    :param Admin admin: Pydantic model containing the admin to be added
+    :return: Returns the new admin object and a message
+    """
     try:
         username = admin.admin_username
         # check username if taken
@@ -576,7 +670,14 @@ def add_admin(admin: Admin):
 
 @app.put('/admin/update_admin/{current_username}',
          status_code=status.HTTP_200_OK)
-def update_admin(current_username: str, updated_admin: Admin):
+def update_admin(current_username: str, updated_admin: Admin) -> dict[str, dict[str, str] | str]:
+    """
+    Function to handle the endpoint for updating an Admin object.
+
+    :param str current_username: The current username of the Admin to be updated
+    :param Admin updated_admin: The Pydantic model containing the updated admin info
+    :return: Returns the updated Admin object along with a message
+    """
     try:
         existing = False
         # check product if existing
@@ -608,6 +709,11 @@ def update_admin(current_username: str, updated_admin: Admin):
 @app.get('/transaction',
          status_code=status.HTTP_200_OK)
 def get_all_transaction() -> list[Transaction]:
+    """
+    Function to handle the endpoint to fetch all transactions from the database
+
+    :return: Returns the list of Transaction objects fetched from the database
+    """
     try:
         db = DatabaseOperator(cursor_factory=RealDictCursor)
         cursor = db.get_cursor()
@@ -632,19 +738,6 @@ def get_all_transaction() -> list[Transaction]:
             detail='Failed to connect to database'
         )
 
-
-@app.get('/transaction/{id}',
-         status_code=status.HTTP_200_OK)
-def get_transaction_by_id(id: int) -> Transaction:
-    pass
-
-
-@app.post('/transaction/{id}',
-          status_code=status.HTTP_201_CREATED)
-def add_transaction(id: int, transaction: Transaction) -> Transaction:
-    pass
-
-
 # === RECORD ===
 #
 # @app.get('/record',
@@ -664,10 +757,19 @@ def add_transaction(id: int, transaction: Transaction) -> Transaction:
 #     pass
 
 
+# === ORDERS ===
+# TODO add the orders endpoints
+
+
 # === META ===
 
 @app.get('/meta/row_count')
-def get_row_count():
+def get_row_count() -> list[tuple]:
+    """
+    Counts the rows using the count_rows method in the DatabaseOperator class
+
+    :return: Returns the tuples containing the table name and the corresponding row count
+    """
     try:
         return DB_STATIC.count_rows()
     except OperationalError:
@@ -677,5 +779,6 @@ def get_row_count():
         )
 
 
-if __name__ == '__main__':
-    print(get_admin_by_username('eluxify'))
+# TODO add the authentication
+
+# TODO add the email endpoint

@@ -1,4 +1,5 @@
 from pprint import pprint
+from typing import List, Tuple, Any
 
 from dotenv import dotenv_values, load_dotenv
 import psycopg2 as pg
@@ -9,6 +10,9 @@ config = dotenv_values('.env')
 
 class DatabaseOperator:
     def __init__(self, **params):
+        """
+        The constructor creates an instance of a Database connection
+        """
         load_dotenv()
         self.host = params.get('host', 'ec2-35-153-35-94.compute-1.amazonaws.com')
         self.database_name = params.get('database', 'd2a8coo0jp3akd')
@@ -46,7 +50,12 @@ class DatabaseOperator:
     #     # return int(max_id) + 1
 
 
-def count_rows():
+def count_rows() -> list[tuple[Any, ...]]:
+    """
+    A static function to count the rows of the tables to be used as counters in the front end
+
+    :return: Returns a list of tuples with the corresponding number of rows
+    """
     db = DatabaseOperator(cursor_factory=RealDictCursor)
     cursor = db.get_cursor()
     sql = """
@@ -68,7 +77,3 @@ def count_rows():
     cursor.execute(sql)
     row_counts = cursor.fetchall()
     return row_counts
-
-
-if __name__ == '__main__':
-    print(count_rows())
