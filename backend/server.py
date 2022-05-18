@@ -409,7 +409,7 @@ def get_all_customer() -> list[Customer]:
                 detail='No customer records exist'
             )
         return all_customer
-    except OperationalError as e:
+    except OperationalError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
