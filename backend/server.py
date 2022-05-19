@@ -758,6 +758,14 @@ def get_all_transaction() -> list[Transaction]:
 
 
 # === ORDERS ===
+# ASSIGNED TO HAZEL
+
+"""
+GET all orders (canteen)
+GET a single order by order number (canteen) 
+POST a new order (customer)
+"""
+
 # TODO add the orders endpoints
 
 
