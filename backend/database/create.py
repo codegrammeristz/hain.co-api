@@ -6,6 +6,7 @@ from backend.data_models import (
     Product,
     Staff,
     Transaction,
+    Order
 )
 from backend.database.security import create_salt, encrypt_password
 from backend.database.database_operation import DatabaseOperator
@@ -156,3 +157,28 @@ def add_transaction_to_database(transaction: Transaction) -> Transaction:
         print(e)
     finally:
         return transaction
+
+def add_order_to_database(order: Order) -> Order:
+    cursor = pg_heroku.get_cursor()
+    try:
+        sql = """INSERT INTO hainco_product(
+                        order_product_code,
+                        order_customer_email,
+                        order_requests,
+                        order_date,
+                        order_staff_username,
+                        order_status
+                    ) VALUES(%s, %s, %s, %s, %s, %s)"""
+        cursor.execute(sql, (order.order_product_code,
+                             order.order_customer_email,
+                             order.order_requests,
+                             order.order_date,
+                             order.order_staff_username,
+                             order.order_status
+                             ))
+        pg_heroku.commit()
+        cursor.close()
+    except (Exception, psycopg2.DatabaseError) as e:
+        print(e)
+    finally:
+        return order
