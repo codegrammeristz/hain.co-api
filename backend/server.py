@@ -850,8 +850,6 @@ def add_order(order: Order):
             detail='Invalid data format received'
         )
 
-# TODO add the orders endpoints
-
 
 # === META ===
 
