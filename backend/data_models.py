@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
 import datetime as dt
 
@@ -60,6 +60,10 @@ class Order(BaseModel):
     order_product_code: str
     order_customer_email: str
     order_request: str
-    order_date: dt.datetime
+    order_date: Optional[dt.datetime]
     order_staff_username: str
     order_status: OrderStatus
+
+    @validator('order_date', pre=True, always=True)
+    def set_ts_now(cls, v):
+        return v or dt.datetime.now()

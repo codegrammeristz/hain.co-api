@@ -11,7 +11,9 @@ from backend.data_models import (
     Product,
     Staff,
     Customer,
-    Admin, Transaction
+    Admin, 
+    Transaction,
+    Order
 )
 
 from backend.database.database_operation import DatabaseOperator
@@ -765,6 +767,88 @@ GET all orders (canteen)
 GET a single order by order number (canteen) 
 POST a new order (customer)
 """
+
+@app.get('/order',
+         status_code=status.HTTP_200_OK)
+def get_all_order():
+    try:
+        db = DatabaseOperator(cursor_factory=RealDictCursor)
+        cursor = db.get_cursor()
+        cursor.execute("""SELECT 
+                        order_id,
+                        order_product_code,
+                        order_customer_email,
+                        order_requests,
+                        order_date,
+                        order_staff_username,
+                        order_status,
+                        order_number
+                        FROM hainco_order""")
+        all_order = cursor.fetchall()
+        if not all_order:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='No order found'
+            )
+        return all_order
+    except OperationalError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail='Failed to connect to database'
+        )
+
+@app.get('/order/{order_number}',
+         status_code=status.HTTP_200_OK)
+def get_order_by_order_number(order_number: int):
+    try:
+        existing = False
+        # check product if existing
+        all_orders = get_all_order()
+        for record in all_orders:
+            # convert to a dictionary
+            db_order = dict(record)
+            if order_number == db_order['order_number']:
+                existing = True
+        if not existing:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Order does not exist.'
+            )
+        db = DatabaseOperator(cursor_factory=RealDictCursor)
+        cursor = db.get_cursor()
+        cursor.execute(f"""SELECT 
+                        order_id,
+                        order_product_code,
+                        order_customer_email,
+                        order_requests,
+                        order_date,
+                        order_staff_username,
+                        order_status,
+                        order_number
+                        FROM hainco_order
+                        WHERE order_number = '{order_number}'
+                        """)
+        order_record = cursor.fetchone()
+        return order_record
+    except OperationalError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail='Failed to connect to database'
+        )
+
+@app.post('/order/new_order',
+          status_code=status.HTTP_201_CREATED)
+def add_order(order: Order):
+    try:
+        return {
+            "data": db_create.add_order_to_database(order),
+            "detail": "Order added to database"
+        }
+    except OperationalError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail='Invalid data format received'
+        )
 
 # TODO add the orders endpoints
 
