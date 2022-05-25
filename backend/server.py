@@ -753,7 +753,8 @@ def get_all_transaction() -> list[Transaction]:
                         transaction_type,
                         transaction_amount,
                         transaction_date
-                        FROM hainco_transaction""")
+                        FROM hainco_transaction
+                        ORDER BY transaction_date DESC""")
         all_transaction = cursor.fetchall()
         if not all_transaction:
             raise HTTPException(
