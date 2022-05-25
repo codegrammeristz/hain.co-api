@@ -1,22 +1,22 @@
-from typing import Dict, Any
-
-from fastapi import FastAPI
+from typing import Any
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from psycopg2 import OperationalError
 from psycopg2.extras import RealDictCursor
 from starlette import status
 from starlette.exceptions import HTTPException
-
 from backend.data_models import (
     Product,
     Staff,
     Customer,
-    Admin, 
+    Admin,
     Transaction,
     Order
 )
-
 from backend.database.database_operation import DatabaseOperator
+
+import jwt
 import backend.database.database_operation as DB_STATIC
 import backend.database.create as db_create
 import backend.database.update as db_update
@@ -24,7 +24,7 @@ import backend.database.security as sec
 
 app = FastAPI(
     title='Hain.co Web API',
-    version='0.0.1',
+    version='0.0.2',
     contact={
         'name': 'Clarence Rhey Salaveria',
         'email': 'clarencerhey.edu@gmail.com'
@@ -47,11 +47,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# === AUTHENTICATION VARIABLES ===
 
-# === TESTING ===
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+JWT_SECRET = 'hainco_tokenizer'
+
+
+# === AUTHENTICATION UTILS ===
+
+def authenticate_admin(username: str, password: str):
+    admin = get_admin_by_username(username)
+    verified = admin.get('admin_password') == password
+    if not admin:
+        return False
+    if not verified:
+        return False
+    return admin
+
+
+@app.post('/token')
+def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    try:
+        user = authenticate_admin(form_data.username, form_data.password)
+        token = jwt.encode(user, JWT_SECRET)
+        return {'access_token': token, 'token_type': 'bearer'}
+    except TypeError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Invalid credentials'
+        )
+
 
 @app.get('/')
-def root():
+def index():
     """
     Root function to serve as gateway to the API when accessing it via the address
     """
@@ -61,7 +89,6 @@ def root():
             'ReDocs': 'https://hainco-api.herokuapp.com/redoc',
             'OpenAPI': 'https://hainco-api.herokuapp.com/docs'
         }
-
     }
 
 
@@ -740,6 +767,7 @@ def get_all_transaction() -> list[Transaction]:
             detail='Failed to connect to database'
         )
 
+
 # === RECORD ===
 #
 # @app.get('/record',
@@ -767,6 +795,7 @@ GET all orders (canteen)
 GET a single order by order number (canteen) 
 POST a new order (customer)
 """
+
 
 @app.get('/order',
          status_code=status.HTTP_200_OK)
@@ -796,6 +825,7 @@ def get_all_order():
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
         )
+
 
 @app.get('/order/{order_number}',
          status_code=status.HTTP_200_OK)
@@ -836,6 +866,7 @@ def get_order_by_order_number(order_number: int):
             detail='Failed to connect to database'
         )
 
+
 @app.post('/order/new_order',
           status_code=status.HTTP_201_CREATED)
 def add_order(order: Order):
@@ -867,7 +898,6 @@ def get_row_count() -> list[tuple]:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail='Failed to connect to database'
         )
-
 
 # TODO add the authentication
 
