@@ -17,7 +17,7 @@ dnspython==2.2.1
 email-validator==1.2.1
 entrypoints==0.4
 executing==0.8.2
-fastapi==0.78.0
+fastapi==0.74.1
 fernet==1.0.1
 gunicorn==20.1.0
 h11==0.13.0
