@@ -1,5 +1,4 @@
-from pprint import pprint
-from typing import List, Tuple, Any
+from typing import Any
 
 from dotenv import dotenv_values, load_dotenv
 import psycopg2 as pg
