@@ -100,13 +100,20 @@ BEGIN
     INSERT INTO hainco_transaction(
         transaction_agent,
         transaction_description,
+        transaction_amount,
         transaction_type,
         transaction_date,
         transaction_state
     ) VALUES (
-        'STAFF/CUSTOMER',
+        'CUSTOMER',
         CONCAT('New Order by: ', NEW.order_customer_email, ' ordering: ', NEW.order_product_code),
-        3,
+        (
+            SELECT
+                product_price
+            FROM hainco_product
+            WHERE product_code = NEW.order_product_code
+        ),
+        1,
         current_timestamp,
         'ADD RECORD'
     );
