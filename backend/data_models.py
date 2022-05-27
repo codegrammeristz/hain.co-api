@@ -24,7 +24,6 @@ class Staff(BaseModel):
     staff_contact_number: str
     staff_username: str
     staff_password: str
-    staff_address: Optional[str]
     staff_position: CanteenPosition
     staff_is_active: bool
 

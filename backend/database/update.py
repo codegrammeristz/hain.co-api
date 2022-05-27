@@ -82,7 +82,6 @@ def update_staff(current_username: str, updated_staff: Staff):
                         staff_username = %s, 
                         staff_password_salt = %s,
                         staff_password_hash = %s,
-                        staff_address = %s,
                         staff_position = %s,
                         staff_is_active = %s
                     WHERE staff_username = '{current_username}'
@@ -92,7 +91,6 @@ def update_staff(current_username: str, updated_staff: Staff):
                              updated_staff.staff_username,
                              salt,
                              encrypted_password,
-                             updated_staff.staff_address,
                              updated_staff.staff_position,
                              updated_staff.staff_is_active))
         pg_heroku.commit()
