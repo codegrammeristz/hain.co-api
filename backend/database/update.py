@@ -97,6 +97,8 @@ def update_staff(current_username: str, updated_staff: Staff):
         cursor.close()
         return {'message': 'Record updated!'}
     except (Exception, psycopg2.DatabaseError) as e:
+        cursor = pg_heroku.get_cursor()
+        cursor.execute("ROLLBACK")
         print(e)
 
 
