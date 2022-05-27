@@ -310,7 +310,6 @@ def get_staff_by_username(username: str) -> dict[str | Any, str | Any]:
                             staff_full_name,
                             staff_contact_number,
                             staff_username,
-                            staff_address,
                             staff_password_salt,
                             staff_password_hash,
                             staff_position,
